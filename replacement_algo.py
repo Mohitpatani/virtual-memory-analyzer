@@ -1,113 +1,223 @@
-from collections import deque
+/* ========== Base Layout ========== */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 1rem;
+    background-color: #f4f7fb;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
 
-class FIFOPageReplacement:
-    def __init__(self, frame_count):
-        self.frames = deque()
-        self.frame_count = frame_count
+body.dark-mode {
+    background-color: #121212;
+    color: #f1f1f1;
+}
 
-    def replace(self, page_number):
-        if page_number in self.frames:
-            return False
-        if len(self.frames) >= self.frame_count:
-            self.frames.popleft()
-        self.frames.append(page_number)
-        return True
+/* ========== Container ========== */
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    border: 1px solid #d0d7de;
+}
 
-    def get_frames(self):
-        return list(self.frames)
+/* ========== Headings ========== */
+h1, h3 {
+    color: #2b6777;
+    margin-bottom: 0.6rem;
+    text-align: center;
+}
 
+/* ========== Controls Section ========== */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    border: 1px solid #cfd8dc;
+    background-color: #f9fbfd;
+    padding: 1rem;
+    border-radius: 8px;
+}
 
-class LRUPageReplacement:
-    def __init__(self, frame_count):
-        self.frames = []
-        self.frame_count = frame_count
-        self.usage_order = []
+.controls label {
+    font-weight: bold;
+}
 
-    def replace(self, page_number):
-        if page_number in self.frames:
-            self.usage_order.remove(page_number)
-            self.usage_order.append(page_number)
-            return False
-        if len(self.frames) < self.frame_count:
-            self.frames.append(page_number)
-        else:
-            lru = self.usage_order.pop(0)
-            self.frames.remove(lru)
-            self.frames.append(page_number)
-        self.usage_order.append(page_number)
-        return True
+.controls input,
+.controls select,
+.controls button {
+    padding: 0.4rem 0.6rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #b0bec5;
+}
 
-    def get_frames(self):
-        return list(self.frames)
+.controls input[type="number"],
+.controls input[type="text"],
+.controls select {
+    width: 130px;
+}
 
+.controls button {
+    background-color: #52ab98;
+    color: white;
+    border: 1px solid #3b897d;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
 
-class MRUPageReplacement:
-    def __init__(self, frame_count):
-        self.frames = []
-        self.frame_count = frame_count
-        self.usage_order = []
+.controls button:hover {
+    background-color: #40917f;
+    transform: scale(1.03);
+}
 
-    def replace(self, page_number):
-        if page_number in self.frames:
-            self.usage_order.remove(page_number)
-            self.usage_order.append(page_number)
-            return False
-        if len(self.frames) < self.frame_count:
-            self.frames.append(page_number)
-        else:
-            mru = self.usage_order.pop(-1)
-            self.frames.remove(mru)
-            self.frames.append(page_number)
-        self.usage_order.append(page_number)
-        return True
+/* ========== Stats ========== */
+.stats {
+    background-color: #f1f9ff;
+    padding: 0.8rem 1rem;
+    border-left: 4px solid #3b9ae1;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    color: #003366;
+    border: 1px solid #cbe3f7;
+}
 
-    def get_frames(self):
-        return list(self.frames)
+/* ========== Visual Grids ========== */
+.visual {
+    border: 1px solid #cfd8dc;
+    border-radius: 8px;
+    background-color: #fafafa;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
 
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 6px;
+    margin-bottom: 1rem;
+}
 
-class OptimalPageReplacement:
-    def __init__(self, frame_count, reference_string=None):
-        self.frames = []
-        self.frame_count = frame_count
-        self.reference_string = reference_string or []
-        self.current_index = 0
+.grid div {
+    padding: 10px;
+    text-align: center;
+    background-color: #e0f7fa;
+    border: 2px solid #80deea;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #006064;
+    transition: transform 0.1s, background-color 0.2s;
+}
 
-    def replace(self, page_number):
-        if page_number in self.frames:
-            self.current_index += 1
-            return False
-        if len(self.frames) < self.frame_count:
-            self.frames.append(page_number)
-        else:
-            future = self.reference_string[self.current_index + 1:]
-            indices = []
-            for f in self.frames:
-                if f in future:
-                    indices.append(future.index(f))
-                else:
-                    indices.append(float('inf'))
-            victim_index = indices.index(max(indices))
-            self.frames[victim_index] = page_number
-        self.current_index += 1
-        return True
+.grid div:hover {
+    transform: scale(1.05);
+}
 
-    def get_frames(self):
-        return list(self.frames)
+.grid .fault {
+    background-color: #ffebee;
+    border-color: #e57373;
+    color: #b71c1c;
+}
 
-    def reset(self):
-        self.frames.clear()
-        self.current_index = 0
+.grid .hit {
+    background-color: #e8f5e9;
+    border-color: #81c784;
+    color: #2e7d32;
+}
 
+/* ========== History Log ========== */
+#history-log {
+    background-color: #fffbe6;
+    border: 1px solid #ffe082;
+    padding: 1rem;
+    max-height: 220px;
+    overflow-y: auto;
+    border-radius: 6px;
+    margin-top: 1rem;
+    border-top: 2px solid #ffca28;
+}
 
-def get_algorithm(name, frame_count, reference_string=None):
-    name = name.upper()
-    if name == "FIFO":
-        return FIFOPageReplacement(frame_count)
-    elif name == "LRU":
-        return LRUPageReplacement(frame_count)
-    elif name == "MRU":
-        return MRUPageReplacement(frame_count)
-    elif name == "OPTIMAL":
-        return OptimalPageReplacement(frame_count, reference_string)
-    else:
-        raise ValueError(f"Unknown replacement algorithm: {name}")
+#history-log h3 {
+    margin-top: 0;
+    color: #ff6f00;
+    border-bottom: 1px solid #ffb300;
+    padding-bottom: 0.3rem;
+}
+
+#log-entries li {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: #5d4037;
+    border-bottom: 1px dashed #ffe082;
+    padding-bottom: 2px;
+}
+
+/* ========== Dark Mode Tweaks ========== */
+body.dark-mode .container {
+    background-color: #1e1e1e;
+    border-color: #333;
+    box-shadow: none;
+}
+
+body.dark-mode .controls {
+    background-color: #1c1c1c;
+    border-color: #333;
+}
+
+body.dark-mode .controls input,
+body.dark-mode .controls select {
+    background-color: #2a2a2a;
+    color: #fff;
+    border-color: #555;
+}
+
+body.dark-mode .controls button {
+    background-color: #3b9ae1;
+    border-color: #2b6fb4;
+}
+
+/* === Visual Area (Page Table & Frames) === */
+body.dark-mode .visual {
+    background-color: #18222d; /* Deep navy-gray behind Page Table & Frames */
+    border-color: #2a3b4d;
+}
+
+body.dark-mode .grid div {
+    background-color: #243447; /* Slightly lighter grid cells */
+    color: #ecf0f1;
+    border-color: #3a5069;
+}
+
+body.dark-mode .grid .fault {
+    background-color: #8b1e1e; /* Rich red for faults */
+    color: #fff;
+    border-color: #e74c3c;
+}
+
+body.dark-mode .grid .hit {
+    background-color: #145a32; /* Deep green for hits */
+    color: #fff;
+    border-color: #27ae60;
+}
+
+body.dark-mode .stats {
+    background-color: #1a2631;
+    border-color: #2980b9;
+    color: #ecf0f1;
+}
+
+body.dark-mode #history-log {
+    background-color: #2b2b2b;
+    border-color: #555;
+    color: #eee;
+}
+
+body.dark-mode #history-log h3 {
+    color: #f39c12;
+    border-color: #f1c40f;
+}
